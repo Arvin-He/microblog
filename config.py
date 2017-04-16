@@ -1,3 +1,6 @@
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 # 为了激活跨站点请求伪造保护
 CSRF_ENABLED = True
 # 仅当CSRF激活时才需要,用来建立一个加密令牌,用于验证一个表单
@@ -10,8 +13,7 @@ OPENID_PROVIDERS = [
     { 'name': 'Flickr', 'url': 'http://www.flickr.com/<username>' },
     { 'name': 'MyOpenID', 'url': 'https://www.myopenid.com' }]
 
-import os
-basedir = os.path.abspath(os.path.dirname(__file__))
+
 # 数据库文件路径
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 # 把SQLAlchemy-migrate数据文件存储在这里
