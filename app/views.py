@@ -1,12 +1,13 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
 
-from app import app, db,  lm, oid
+from app import app, db
+# from app import lm, oid
 from .forms import LoginForm
 from .models import User
 
 
-@lm.user_loader
+# @lm.user_loader
 def load_user(id):
     return User.query.get(int(id))
 
@@ -35,7 +36,7 @@ def index():
 
 
 @app.route('/login', methods=['GET', 'POST'])
-@oid.loginhandler
+# @oid.loginhandler
 def login():
     if g.user is not None and g.user.is_authenticated:
         return redirect(url_for('index'))
@@ -46,7 +47,7 @@ def login():
     return render_template('login.html', title='Sign In', form = form, providers = app.config['OPENID_PROVIDERS'])
 
 
-@oid.after_login
+# @oid.after_login
 def after_login(resp):
     if resp.email is None or resp.email == "":
         flash("Invalid login. Please try again.")
@@ -71,3 +72,16 @@ def after_login(resp):
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+@app.route('/user/<nickname>')
+@login_required
+def user(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user == None:
+        flash('User' + nickname + 'not found')
+        return redirect(url_for('index'))
+    posts = [
+        {'author': user, 'body': 'Test post #1'},
+        {'author': user, 'body': 'Test post #2'}
+    ]
+    return render_template('user.html', user=user, posts=posts)

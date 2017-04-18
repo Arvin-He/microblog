@@ -1,5 +1,4 @@
 #!flask/bin/python
-# import importlib
 import types
 from migrate.versioning import api
 from app import db
@@ -8,8 +7,7 @@ from config import SQLALCHEMY_MIGRATE_REPO
 
 v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
 
-migration = SQLALCHEMY_MIGRATE_REPO + ('/version/%03d_migration.py' % (v + 1))
-# tmp_module = importlib.new_module('old_model')
+migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v + 1))
 tmp_module = types.ModuleType('old_model')
 old_model = api.create_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
 
