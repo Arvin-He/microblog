@@ -2,6 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+     <!--<h1>User: {{ user.nickname }}!</h1>-->
      <table>
       <tr valign="top">
           <td><img src="{{ user.avatar(128) }}"></td>
@@ -10,6 +11,9 @@
      </table>
     <hr>
     {% for post in posts %}
+    <!--<p>
+        {{ post.author.nickname }} says: <b>{{ post.body }}</b>
+    </p>-->
     <table>
       <tr valign="top">
           <td><img src="{{ post.author.avatar(50) }}"></td><td><i>{{ post.author.nickname }} says:</i><br>{{ post.body }}</td>

@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
-from flask_login import login_user, logout_user, current_user, login_required
+from flask_login import login_user, logout_user, current_user, login_required, current_user
 
 from app import app, db
 from app import lm, oid
@@ -17,7 +17,6 @@ def load_user(id):
 @login_required
 def index():
     user = g.user
-    # user = {'nickname': 'Arvin'}
     posts = [
         {
             'author': {'nickname': 'John'},
@@ -42,11 +41,14 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         session['remember_me'] = form.remember_me.data
+        user = User.query.filter_by(nickname=form.openid.data).first()
+        login_user(user, form.remember_me.data)
+        return redirect(url_for('index'))
         return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
     return render_template('login.html',
                            title='Sign In',
-                           form = form,
-                           providers = app.config['OPENID_PROVIDERS'])
+                           form=form,
+                           providers=app.config['OPENID_PROVIDERS'])
 
 
 @app.before_request
@@ -71,7 +73,7 @@ def after_login(resp):
     if 'remember_me' in session:
         remember_me = session['remember_me']
         session.pop('remember_me', None)
-    login_user(user, remember = remember_me)
+    login_user(user, remember=remember_me)
     return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -80,11 +82,12 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+
 @app.route('/user/<nickname>')
 @login_required
 def user(nickname):
     user = User.query.filter_by(nickname=nickname).first()
-    if user == None:
+    if user is None:
         flash('User {} not found'.format(nickname))
         return redirect(url_for('index'))
     posts = [
