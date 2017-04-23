@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
-from flask_login import login_user, logout_user, current_user, login_required, current_user
-
+from flask_login import login_user, logout_user, login_required, current_user
+from datetime import datetime
 from app import app, db
 from app import lm, oid
-from .forms import LoginForm
+from .forms import LoginForm, EditForm
 from .models import User
 
 
@@ -44,7 +44,7 @@ def login():
         user = User.query.filter_by(nickname=form.openid.data).first()
         login_user(user, form.remember_me.data)
         return redirect(url_for('index'))
-        return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
+        # return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
     return render_template('login.html',
                            title='Sign In',
                            form=form,
@@ -54,7 +54,10 @@ def login():
 @app.before_request
 def before_request():
     g.user = current_user
-
+    if g.user.is_authenticated:
+        g.user.last_seen = datetime.utcnow()
+        db.session.add(g.user)
+        db.session.commit()
 
 @oid.after_login
 def after_login(resp):
@@ -97,3 +100,19 @@ def user(nickname):
     return render_template('user.html',
                            user=user,
                            posts=posts)
+
+@app.route("/edit", methods=["GET", "POST"])
+@login_required
+def edit():
+    form = EditForm()
+    if form.validate_on_submit():
+        g.user.nickname = form.nickname.data
+        g.user.about_me = form.about_me.data
+        db.session.add(g.user)
+        db.session.commit()
+        flash("Your changes have been saved.")
+        return redirect(url_for("edit"))
+    else:
+        form.nickname.data = g.user.nickname
+        form.about_me.data = g.user.about_me
+    return render_template("edit.html", form=form)
