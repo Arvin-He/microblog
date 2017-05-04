@@ -24,3 +24,6 @@ class EditForm(FlaskForm):
             self.nickname.errors.append('This nickname is already in use. Please choose another noe.')
             return False
         return True
+
+class PostForm(FlaskForm):
+    post = StringField('post', validators=[DataRequired()])

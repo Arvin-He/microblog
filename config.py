@@ -29,3 +29,6 @@ MAIL_PASSWORD = None
 
 # administrator list
 ADMINS = ["arvin3209@163.com"]
+
+# pagination
+POST_PER_PAGE = 3

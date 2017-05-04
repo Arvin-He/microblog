@@ -3,8 +3,8 @@ from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime
 from app import app, db
 from app import lm, oid
-from .forms import LoginForm, EditForm
-from .models import User
+from .forms import LoginForm, EditForm, PostForm
+from .models import User, Post
 
 
 @lm.user_loader
@@ -12,11 +12,18 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    user = g.user
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=g.user)
+        db.session.add(post)
+        db.session.commit()
+        flash('your post is now live!')
+        return redirect(url_for('index'))
+    # user = g.user
     posts = [
         {
             'author': {'nickname': 'John'},
